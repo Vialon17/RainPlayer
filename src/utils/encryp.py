@@ -1,5 +1,6 @@
 from base64 import b64encode, b64decode
 from cryptography.fernet import Fernet
+from typing import Literal
 import pickle
 import os
 from time import time
@@ -25,28 +26,45 @@ class Hasher:
         'AES': ()
     }
 
+    _fernet_key_path = "cache/fernet_key.pkl"
+
     def __init__(self, hash: str = 'base64'):
         self._hash = hash
 
-    def _create_aes_key() -> str:
-        aes_key = Fernet.generate_key()
-        to_pkl(aes_key, "cache/aes_key.pkl")
-        return aes_key
+    def _create_fernet_key(self) -> str:
+        fernet_key = Fernet.generate_key()
+        to_pkl(fernet_key, self._fernet_key_path)
+        print(fernet_key)
+        return fernet_key
 
+    def _get_key(self) -> str:
+        if os.path.exists(self._fernet_key_path):
+            file_stat = os.stat(self._fernet_key_path)
+            fernet_key = from_pkl(self._fernet_key_path)
+            print(file_stat.st_ctime, file_stat.st_mtime)
+            if file_stat.st_ctime == file_stat.st_mtime and isinstance(fernet_key, str):
+                return fernet_key
+        # return self._create_fernet_key()
+         
+    
     def encode(self, data: str) -> str:
         if not isinstance(data, str):
             raise TypeError("Need string type.")
         data = data.encode('utf-8')
-        def aes():
-            if not os.path.exists("cache/aes_key.pkl"):
-                aes_key = self._create_aes_key()
-            else:
-                # check file info
-                file_stat = os.stat("cache/aes_key.pkl")
-                if file_stat.st_ctime != file_stat.st_mtime or time() - file_stat.st_ctime:
-                    aes_key = self._create_aes_key()
-        aes()
+
+    def fernet(self, data: str , method: Literal['encode', 'decode']):
+        if method not in ('encode', 'decode'):
+            raise ValueError("Invalid method.")
+        key = self._get_key()
+        cipher_suite = Fernet(key)
+        if method == 'encode':
+            # encrypted data
+            re_data = cipher_suite.encrypt(data.encode())
+        else:
+            # decrypted data
+            re_data = cipher_suite.decrypt(data).decode()
+        return re_data
 
 if __name__ == '__main__':
     ha = Hasher()
-    ha.encode("https://asuq.com/asd?pass=134a2@ad&login=adi12a_aeq")
+    print(ha.fernet(b'gAAAAABk9fMkDreW8T_aoj9L1eH9OR_noXpqzTYtGruBYt_nmaee1yiE0IK2i9grLCj3qAecfhAIwttH-myaBz-hleWh-SW6Vw==', 'decode'))
