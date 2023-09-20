@@ -1,6 +1,0 @@
-Part One
-The cookie and user data security
-
-use aes as the key
-
-# how to keep the key file can't been modified?
