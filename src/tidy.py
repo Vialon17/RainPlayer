@@ -27,9 +27,6 @@ def parse_song(file_name: str, easy = True) -> dict:
             info_dict['artist'] = [info_dict['artist']]
         return info_dict
 
-def get_father(file_name: str) -> str:
-    return os.path.basename(os.path.dirname(file_name))
-
 def walk_songs(folder: str) -> pd.DataFrame:
     '''
     Walk the playlist folder, get all song's info
