@@ -1,20 +1,7 @@
 from cryptography.fernet import Fernet
 from typing import Literal
-import pickle
-import os
-import time
-
-def to_pkl(obj: object, file_name: str) -> None:
-    if os.path.splitext(file_name)[-1] != '.pkl':
-        raise ValueError("the file isn't a pickle file.")
-    with open(file_name, 'wb') as f:
-        pickle.dump(obj, f)
-
-def from_pkl(file_name: str) -> object:
-    if os.path.splitext(file_name)[-1] != '.pkl':
-        raise ValueError("the file isn't a pickle file.")
-    with open(file_name, 'rb') as f:
-        return pickle.load(f)
+from .files import File
+import os, time
 
 class Hasher:
 
@@ -29,7 +16,7 @@ class Hasher:
         '''
         fernet_key = Fernet.generate_key()
         now_time = time.time()
-        to_pkl([fernet_key, now_time], self._fernet_key_path)
+        File.write_pkl([fernet_key, now_time], self._fernet_key_path)
         return fernet_key
 
     def _get_key(self) -> str:
@@ -37,7 +24,7 @@ class Hasher:
             get fernet key.
         '''
         if os.path.exists(self._fernet_key_path):
-            fernet_key, creat_time = from_pkl(self._fernet_key_path)
+            fernet_key, creat_time = File.read_pkl(self._fernet_key_path)
             if isinstance(fernet_key, bytes) and time.time() - creat_time <= 5 * 86400:
                 return fernet_key
         return self._create_fernet_key()

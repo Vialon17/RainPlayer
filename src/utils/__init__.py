@@ -1,1 +1,2 @@
-from .encryp import Hasher, from_pkl, to_pkl
+from .encryp import Hasher
+from .files import File
