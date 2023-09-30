@@ -6,11 +6,18 @@ from typing import Literal
 def get_father(file_name: str) -> str:
     return os.path.basename(os.path.dirname(file_name))
 
-class Configuration:
+class File:
 
     support_config = ('json', 'yaml', 'pkl')
 
     def __init__(self, file_name: str):
+        '''
+        e.g:
+            path: -> 'C:/user/xxx/appdata/local/your_filename.txt'
+
+            name -> 'your_filename.txt'
+
+        '''
         if not os.path.isabs(file_name):
             self._path = os.path.join(os.getcwd(), file_name)
         else:
@@ -22,9 +29,17 @@ class Configuration:
         if self._suffix_name not in self.support_config:
             raise ValueError("Unsupported Configuration.")
 
+    @property
+    def path(self):
+        return self._path
+    
+    @property
+    def name(self):
+        return self._name
+    
     def write(self, 
               target: object | str, 
-              mode = Literal['w', 'w+', 'wb', 'wb+'], 
+              mode: Literal['w', 'w+', 'wb', 'wb+', 'a', 'ab'] = 'w', 
               encoding = "utf-8") -> bool:
         try:
             with open(self._path, mode = mode, encoding = encoding) as fi:
@@ -40,7 +55,7 @@ class Configuration:
             print_exc(); return False
     
     def read(self,
-             mode = Literal['r', 'r+', 'rb', 'rb+'],
+             mode: Literal['r', 'r+', 'rb', 'rb+'] = 'r',
              encoding = "utf-8") -> dict | object:
         with open(self._path, mode = mode, encoding = encoding) as fi:
             match self._suffix_name:
@@ -52,19 +67,55 @@ class Configuration:
                     re_target = pickle.load(fi, encoding = encoding)
         return re_target
 
-    def transform(self, target_format: Literal['pkl', 'json', 'yaml']):
-        pass
+    def transform(self, 
+                  target_format: Literal['pkl', 'json', 'yaml'], mode: Literal['w', 'wb'] = 'w', 
+                  encoding: str = 'utf-8') -> str:
+        if target_format not in self.support_config:
+            raise ValueError("Unsupported file format!")
+        data = self.read()
+        with open(f'{self.name}.{target_format}', mode = mode, encoding = encoding) as fi:
+            match target_format:
+                case 'pkl':
+                    pickle.dump(data, fi)
+                case 'json':
+                    json.dump(data, fi)
+                case 'yaml':
+                    yaml.dump(data, fi, indent = 4)
+        return f'{self.name}.{target_format}'
+                
+    @staticmethod
+    def write_pkl(obj: object, file_name: str) -> None:
+        if os.path.splitext(file_name)[-1] != '.pkl':
+            raise ValueError("the file isn't a pickle file.")
+        with open(file_name, 'wb') as f:
+            pickle.dump(obj, f)
 
+    @staticmethod
+    def read_pkl(file_name: str) -> object:
+        if os.path.splitext(file_name)[-1] != '.pkl':
+            raise ValueError("the file isn't a pickle file.")
+        with open(file_name, 'rb') as f:
+            data = pickle.load(f)
+        return data
 
-def write_pkl(obj: object, file_name: str) -> None:
-    if os.path.splitext(file_name)[-1] != '.pkl':
-        raise ValueError("the file isn't a pickle file.")
-    with open(file_name, 'wb') as f:
-        pickle.dump(obj, f)
+    @staticmethod
+    def read_yaml(file_name: str, encoding = "utf-8") -> dict:
+        with open(file_name, "r", encoding = encoding) as f:
+            data = yaml.load(f, Loader = yaml.FullLoader)
+        return data
 
-def read_pkl(file_name: str) -> object:
-    if os.path.splitext(file_name)[-1] != '.pkl':
-        raise ValueError("the file isn't a pickle file.")
-    with open(file_name, 'rb') as f:
-        return pickle.load(f)
+    @staticmethod
+    def write_yaml(file_name: str, obj: object, encoding = "utf-8") -> None:
+        with open(file_name, "w", encoding = encoding) as f:
+            yaml.dump(obj, f, indent = 4)
 
+    @staticmethod
+    def read_json(file_name: str, encoding = "utf-8") -> dict:
+        with open(file_name, "r", encoding = encoding) as f:
+            data = json.load(f)
+        return data
+    
+    @staticmethod
+    def write_json(file_name: str, obj: object, encoding = "utf-8") -> None:
+        with open(file_name, "w", encoding = encoding) as f:
+            json.dump(obj, f, ensure_ascii = False)

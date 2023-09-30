@@ -1,6 +1,6 @@
 from cryptography.fernet import Fernet
 from typing import Literal
-from .files import write_pkl, read_pkl
+from .files import File
 import os, time
 
 class Hasher:
@@ -16,7 +16,7 @@ class Hasher:
         '''
         fernet_key = Fernet.generate_key()
         now_time = time.time()
-        write_pkl([fernet_key, now_time], self._fernet_key_path)
+        File.write_pkl([fernet_key, now_time], self._fernet_key_path)
         return fernet_key
 
     def _get_key(self) -> str:
@@ -24,7 +24,7 @@ class Hasher:
             get fernet key.
         '''
         if os.path.exists(self._fernet_key_path):
-            fernet_key, creat_time = read_pkl(self._fernet_key_path)
+            fernet_key, creat_time = File.read_pkl(self._fernet_key_path)
             if isinstance(fernet_key, bytes) and time.time() - creat_time <= 5 * 86400:
                 return fernet_key
         return self._create_fernet_key()

@@ -47,7 +47,8 @@ def walk_songs(folder: str) -> pd.DataFrame:
                     except:
                         song_info = dict()
                     song_info["file_name"] = file
-                    song_list.append(song_info) if 'title' in song_info and song_info['title'] != '' else damaged_list.append(file)
+                    song_list.append(song_info) if 'title' in song_info and song_info['title'] != '' \
+                        else damaged_list.append(file)
             re_list[os.path.basename(folder)] = pd.DataFrame(song_list)
             re_list['damaged'].extend(damaged_list)
     else:
