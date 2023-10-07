@@ -70,6 +70,9 @@ class File:
     def transform(self, 
                   target_format: Literal['pkl', 'json', 'yaml'], mode: Literal['w', 'wb'] = 'w', 
                   encoding: str = 'utf-8') -> str:
+        '''
+        Convert the file format to specified format
+        '''
         if target_format not in self.support_config:
             raise ValueError("Unsupported file format!")
         data = self.read()
