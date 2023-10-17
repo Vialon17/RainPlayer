@@ -1,12 +1,25 @@
 import os, pickle, yaml, json
 from traceback import print_exc
-from typing import Literal
+from typing import Literal, Generator
 
 
 def get_father(file_name: str) -> str:
     return os.path.basename(os.path.dirname(file_name))
 
-class File:
+def get_sub_folder(os_path: str):
+    if not os.path.isdir(os_path):
+        raise ValueError(f"Invalid Path -> {os_path}")
+    return [f.path for f in os.scandir(os_path) if f.is_dir()]
+
+def file_generator(os_path: str, filter_suffix: list = None) -> Generator:
+    if not os.path.isabs(os_path):
+        os_path = os.path.join(os.getcwd(), os_path)
+    for root, _, file_list in os.walk(os_path):
+        for file in file_list:
+            if os.path.splitext(file)[1].lstrip(".") not in filter_suffix:
+                yield os.path.join(root, file)
+
+class Config:
 
     support_config = ('json', 'yaml', 'pkl')
 

@@ -1,6 +1,7 @@
-from src.utils import Hasher
-from src.tidy import walk_songs, parse_song
-
+from src.utils import Hasher, Config
+from src.tidy import walk_songs, parse_song, Song_Lib
 # mp3, flac, wav, ape, ogg
-df1 = walk_songs("E:\Songs\十七韵倾城喜欢的音乐")
-print(df1)
+# df1 = Song_Lib("E:\Songs")
+# print(df1._lib)
+
+print(Config.read_yaml('config/config.yaml'))

@@ -1,0 +1,7 @@
+# the support song file styles
+song_suffix:
+  - mp3
+  - flac
+  - wav
+  - ape
+  - ogg

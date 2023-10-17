@@ -41,8 +41,8 @@ def walk_songs(folder: str) -> pd.DataFrame:
     re_list = {i:'' for i in os.listdir(folder) if os.path.isdir(os.path.join(folder, i))}
     damaged_list, re_list['damaged'] = [], []
     if len(re_list) == 1:
-         song_list = []
-         for root, _, file_list in os.walk(folder):
+        song_list = []
+        for root, _, file_list in os.walk(folder):
             for file in file_list:
                 file_extension = os.path.splitext(file)[1].lstrip(".")
                 if file_extension in song_suffix:
@@ -55,10 +55,10 @@ def walk_songs(folder: str) -> pd.DataFrame:
                         else damaged_list.append(file)
             re_list[os.path.basename(folder)] = pd.DataFrame(song_list)
             re_list['damaged'].extend(damaged_list)
-    else:
-        for dir in [i for i in re_list.keys() if i != 'damaged']:
-            temp_list = walk_songs(os.path.join(folder, dir))
-            re_list['damaged'].extend(temp_list['damaged'])
+        else:
+            for dir in [i for i in re_list.keys() if i != 'damaged']:
+                temp_list = walk_songs(os.path.join(folder, dir))
+                re_list['damaged'].extend(temp_list['damaged'])
             del temp_list['damaged']; re_list.update(temp_list)
     return re_list
 
@@ -72,9 +72,18 @@ class Song_Lib:
         elif isinstance(dataframe, pd.DataFrame):
             self._lib = dataframe
         elif isinstance(dataframe, str):
-            self._lib = walk_songs(dataframe)
+            dataframe = walk_songs(dataframe)
+            self._lib = pd.concat([dataframe[key] for key in dataframe if key != 'damaged'], \
+                                  axis = 0, ignore_index = True, sort = True)
         else:
             raise ValueError("Invalid DataFrame")
+        
+    def __getattr__(self, attr_name: str):
+        if hasattr(self, attr_name):
+            return self.attr_name
+        elif hasattr(self._lib, attr_name):
+            return self._lib.attr_name
+        raise AttributeError(f"Can't find the attribute {attr_name}")
         
     @property
     def pure(self) -> pd.DataFrame:
@@ -85,7 +94,7 @@ class Song_Lib:
         self._pure.drop_duplicates(subset = 'title', keep = 'first', inplace = True)
         return self._pure
 
-    def search(self, name: str, mode: str = Literal['fuzzy', 'accurate']) -> pd.Series | None:
+    def search(self, name: str, mode: str = Literal['fuzzy', 'accurate']) -> dict | str | None:
         from fuzzywuzzy import process
         if mode == 'accurate':
             if name not in self.pure['title']:

@@ -1,2 +1,2 @@
 from .encryp import Hasher
-from .files import File
+from .files import Config
