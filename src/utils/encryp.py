@@ -1,6 +1,6 @@
 from cryptography.fernet import Fernet
 from typing import Literal
-from .files import Config
+from .config import Config
 import os, time
 
 class Hasher:

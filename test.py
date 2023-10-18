@@ -4,4 +4,5 @@ from src.tidy import walk_songs, parse_song, Song_Lib
 # df1 = Song_Lib("E:\Songs")
 # print(df1._lib)
 
-print(Config.read_yaml('config/config.yaml'))
+conf = Config('config/config.yaml')
+conf.transform('json')
