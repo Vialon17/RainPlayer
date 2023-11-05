@@ -2,9 +2,15 @@ import os, yaml, json, pickle
 from typing import Literal, Generator
 
 def get_father(file_name: str) -> str:
+    '''
+    Returh Target File's Father folder Path
+    '''
     return os.path.basename(os.path.dirname(file_name))
 
 def get_sub_folder(os_path: str, fliter_folder: list = None) -> list[str]:
+    '''
+    Return Child folders list.
+    '''
     if not os.path.isdir(os_path):
         raise ValueError(f"Invalid Path -> {os_path}")
     if fliter_folder:
@@ -12,6 +18,9 @@ def get_sub_folder(os_path: str, fliter_folder: list = None) -> list[str]:
     return [f.path for f in os.scandir(os_path) if os.path.isdir(f)]
 
 def get_sub_file(os_path: str) -> list[str]:
+    '''
+    Return Target Folder's Child files
+    '''
     return [i for i in file_generator(os_path)]
 
 def file_generator(os_path: str, include_suffix: list = None) -> Generator:
