@@ -1,4 +1,4 @@
-# RainV
+# RainVPlayer
 
 Rainmeter Web Music Player based on Python
 
