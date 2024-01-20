@@ -1,6 +1,6 @@
 from cryptography.fernet import Fernet
 from typing import Literal
-from .files import File
+from .config import Config
 import os, time
 
 class Hasher:
@@ -10,24 +10,26 @@ class Hasher:
     def __init__(self, hash: str = 'base64'):
         self._hash = hash
 
+    @property
     def _create_fernet_key(self) -> str:
         '''
             create fernet key with timestamp.
         '''
         fernet_key = Fernet.generate_key()
         now_time = time.time()
-        File.write_pkl([fernet_key, now_time], self._fernet_key_path)
+        Config.write_pkl([fernet_key, now_time], self._fernet_key_path)
         return fernet_key
 
+    @property
     def _get_key(self) -> str:
         '''
             get fernet key.
         '''
         if os.path.exists(self._fernet_key_path):
-            fernet_key, creat_time = File.read_pkl(self._fernet_key_path)
+            fernet_key, creat_time = Config.read_pkl(self._fernet_key_path)
             if isinstance(fernet_key, bytes) and time.time() - creat_time <= 5 * 86400:
                 return fernet_key
-        return self._create_fernet_key()
+        return self._create_fernet_key
 
     def fernet(self, data: str , method: Literal['encode', 'decode']) -> str | bytes:
         '''
@@ -37,7 +39,7 @@ class Hasher:
         '''
         if method not in ('encode', 'decode'):
             raise ValueError("Invalid method.")
-        key = self._get_key()
+        key = self._get_key
         cipher_suite = Fernet(key)
         if method == 'encode':
             re_data = cipher_suite.encrypt(data.encode())
